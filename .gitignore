@@ -1,0 +1,35 @@
+# =====================================================================
+# SENSITIVE DATA & CREDENTIALS PROTECTION
+# =====================================================================
+
+# Browser profile: Contains session cookies, login tokens & browser cache
+browser_profile/
+browser_profile*
+Default/
+
+# SQLite databases & backups (contains profile names, URLs, photos, decisions)
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+
+# Exported CSVs with personal friend lists
+*.csv
+
+# Python virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Temporary files & logs
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
