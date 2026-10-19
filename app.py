@@ -527,7 +527,10 @@ def undo():
         db.execute("UPDATE friends SET decision='pending', reviewed_at=NULL WHERE profile_url=?", (row['profile_url'],))
     return jsonify(ok=True)
 
-if __name__ == '__main__':
+def main():
     init()
     print('Open http://127.0.0.1:8765 in your browser')
     app.run(host="127.0.0.1", port=8765, debug=False)
+
+if __name__ == '__main__':
+    main()

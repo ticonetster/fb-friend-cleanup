@@ -22,6 +22,12 @@ venv/
 ENV/
 env/
 
+# Build artifacts & package distribution
+*.egg-info/
+build/
+dist/
+*.wheel
+
 # Python bytecode & cache
 __pycache__/
 *.py[cod]

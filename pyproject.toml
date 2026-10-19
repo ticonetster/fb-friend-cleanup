@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fb-friend-cleanup"
+version = "1.0.0"
+description = "Automated local toolkit to audit, review, and selectively prune your Facebook friends list with rate-limiting, mutual-friend discovery, chat deletion, and safety controls."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "ticonetster" }
+]
+license = { text = "GPL-3.0-or-later" }
+keywords = [
+    "facebook",
+    "automation",
+    "playwright",
+    "flask",
+    "sqlite",
+    "privacy",
+    "declutter",
+    "social-media"
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Utilities"
+]
+dependencies = [
+    "flask>=2.0.0",
+    "playwright>=1.30.0"
+]
+
+[project.scripts]
+fb-cleanup-app = "app:main"
+fb-cleanup-runner = "cleanup_runner:main"
+
+[tool.setuptools]
+py-modules = ["app", "cleanup_runner", "collect_friends", "collect_photos", "test_facebook", "test_friends"]
