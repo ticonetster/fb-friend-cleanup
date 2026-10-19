@@ -8,7 +8,13 @@ from urllib.parse import urlsplit
 from flask import Flask, jsonify, request, render_template_string
 from playwright.sync_api import sync_playwright
 
-ROOT = Path(__file__).resolve().parent
+def get_root():
+    cwd = Path.cwd()
+    if (cwd / 'friends.sqlite3').exists() or (cwd / 'browser_profile').exists():
+        return cwd
+    return Path(__file__).resolve().parent
+
+ROOT = get_root()
 DB = ROOT / 'friends.sqlite3'
 PROFILE = ROOT / 'browser_profile'
 app = Flask(__name__)

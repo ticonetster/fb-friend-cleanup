@@ -45,37 +45,42 @@ flowchart LR
 ## Project Prerequisites & Setup
 
 ### Environment Requirements
-- **OS**: Windows (PowerShell recommended)
+- **OS**: Windows, macOS, or Linux
 - **Python**: 3.10+
-- **Virtual Environment**: `.venv` located in project root
+- **Virtual Environment**: `.venv` in your project directory
 
 ### Installation & Setup Options
 
 #### Option A: Install via pip from GitHub (Quickest)
-```powershell
+```bash
 pip install git+https://github.com/ticonetster/fb-friend-cleanup.git
 playwright install chromium
 ```
-Once installed, you can launch the tools anywhere:
+Once installed, you can launch the tools from any directory:
 - `fb-cleanup-app` - Starts the local web review interface at `http://127.0.0.1:8765`
 - `fb-cleanup-runner` - Starts the automated 3-in-1 cleanup batch execution
 
 #### Option B: Download Release Package (.whl)
 Download `fb_friend_cleanup-1.0.0-py3-none-any.whl` from the [Latest GitHub Release](https://github.com/ticonetster/fb-friend-cleanup/releases/latest) and install:
-```powershell
+```bash
 pip install fb_friend_cleanup-1.0.0-py3-none-any.whl
 playwright install chromium
 ```
 
 #### Option C: Clone and Run from Source (Recommended for Local Customization)
-```powershell
-# Clone the repository
+```bash
+# Clone the repository (or open your existing project folder)
 git clone https://github.com/ticonetster/fb-friend-cleanup.git
 cd fb-friend-cleanup
 
 # Create and activate virtual environment
+# Windows (PowerShell):
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+
+# macOS / Linux:
+python3 -m venv .venv
+source .venv/bin/activate
 
 # Install package dependencies
 pip install -e .
@@ -95,13 +100,13 @@ playwright install chromium
   - Initial project setup.
   - Whenever Facebook logs you out or prompts for 2FA.
 - **Usage**:
-  ```powershell
-  .\.venv\Scripts\python.exe test_facebook.py
+  ```bash
+  python test_facebook.py
   ```
 - **Instructions**:
   1. The browser will open to `https://www.facebook.com/`.
   2. Enter your email and password, complete any 2FA challenge, and select **"Save Browser / Remember Browser"**.
-  3. Once on your Facebook feed, return to the PowerShell terminal and press **Enter** to save the session and close the browser.
+  3. Once on your Facebook feed, return to the terminal and press **Enter** to save the session and close the browser.
 
 ---
 
@@ -110,8 +115,8 @@ playwright install chromium
 - **Purpose**: Navigates to `https://www.facebook.com/me/friends`, reads visible friend cards, normalizes profile URLs, and seeds the `friends` table in `friends.sqlite3` with `decision='pending'`.
 - **When to run**: After logging in, to ingest your full Facebook friends list.
 - **Usage**:
-  ```powershell
-  .\.venv\Scripts\python.exe collect_friends.py
+  ```bash
+  python collect_friends.py
   ```
 - **Instructions**:
   1. A browser window opens directly to your Facebook friends page.
@@ -126,8 +131,8 @@ playwright install chromium
 - **Purpose**: Captures thumbnail avatar URLs from the friends list page and populates the `photo_url` column in `friends.sqlite3`.
 - **When to run**: Immediately after collecting friends, before starting review.
 - **Usage**:
-  ```powershell
-  .\.venv\Scripts\python.exe collect_photos.py
+  ```bash
+  python collect_photos.py
   ```
 - **Instructions**:
   1. The browser opens your friends list.
@@ -150,8 +155,10 @@ playwright install chromium
   - **Asynchronous UI**: KEEP and REMOVE buttons remain responsive instantly without waiting for mutual-friend lookups.
   - **Undo Support**: Reverts previous decisions seamlessly.
 - **Usage**:
-  ```powershell
-  .\.venv\Scripts\python.exe app.py
+  ```bash
+  python app.py
+  # Or run the installed CLI command:
+  fb-cleanup-app
   ```
 - **Accessing the App**:
   - Open **`http://127.0.0.1:8765`** in your browser.
@@ -265,21 +272,21 @@ Facebook aggressively monitors account relationship changes. Adhere to these gui
 - Facebook occasionally delays background media loading on certain heavy profiles.
 - `cleanup_runner.py` catches these timeouts, logs the issue to `removal_log` with status `'failed'`, and continues with the rest of the batch.
 - To retry failed profiles at any time, run:
-  ```powershell
-  .\.venv\Scripts\python.exe -c "import cleanup_runner; db = cleanup_runner.connect(); db.execute('UPDATE removal_log SET status=\"pending\" WHERE status=\"failed\"'); db.commit(); print('Failed profiles reset to pending.')"
+  ```bash
+  python -c "import cleanup_runner; db = cleanup_runner.connect(); db.execute('UPDATE removal_log SET status=\"pending\" WHERE status=\"failed\"'); db.commit(); print('Failed profiles reset to pending.')"
   ```
 
 ### How do I check current progress?
 Run this one-liner to view remaining and completed counts:
-```powershell
-.\.venv\Scripts\python.exe -c "import cleanup_runner; print(cleanup_runner.get_removal_stats())"
+```bash
+python -c "import cleanup_runner; print(cleanup_runner.get_removal_stats())"
 ```
 
 ---
 
 ## License
 
-This project is licensed under the **GNU General Public License v3.0** (GPLv3) - see the [LICENSE](file:///D:/Development/FacebookCleanup/LICENSE) file for full details.
+This project is licensed under the **GNU General Public License v3.0** (GPLv3) - see the [LICENSE](LICENSE) file for full details.
 
 ### Disclaimer
 This software is provided for personal data management and curation purposes. It is not affiliated with, authorized, maintained, or endorsed by Meta Platforms, Inc. Use responsibly and adhere to platform rate limits.

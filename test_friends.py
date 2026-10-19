@@ -2,11 +2,12 @@
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-PROFILE = str(Path("browser_profile").resolve())
+ROOT = Path(__file__).resolve().parent
+PROFILE = ROOT / "browser_profile"
 
 with sync_playwright() as p:
     browser = p.chromium.launch_persistent_context(
-        user_data_dir=PROFILE,
+        user_data_dir=str(PROFILE),
         headless=False
     )
 
