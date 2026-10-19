@@ -49,19 +49,36 @@ flowchart LR
 - **Python**: 3.10+
 - **Virtual Environment**: `.venv` located in project root
 
-### Installation
+### Installation & Setup Options
 
-If setting up on a new machine or terminal:
-
+#### Option A: Install via pip from GitHub (Quickest)
 ```powershell
-# Navigate to project directory
-cd D:\Development\FacebookCleanup
+pip install git+https://github.com/ticonetster/fb-friend-cleanup.git
+playwright install chromium
+```
+Once installed, you can launch the tools anywhere:
+- `fb-cleanup-app` - Starts the local web review interface at `http://127.0.0.1:8765`
+- `fb-cleanup-runner` - Starts the automated 3-in-1 cleanup batch execution
 
-# Activate virtual environment
+#### Option B: Download Release Package (.whl)
+Download `fb_friend_cleanup-1.0.0-py3-none-any.whl` from the [Latest GitHub Release](https://github.com/ticonetster/fb-friend-cleanup/releases/latest) and install:
+```powershell
+pip install fb_friend_cleanup-1.0.0-py3-none-any.whl
+playwright install chromium
+```
+
+#### Option C: Clone and Run from Source (Recommended for Local Customization)
+```powershell
+# Clone the repository
+git clone https://github.com/ticonetster/fb-friend-cleanup.git
+cd fb-friend-cleanup
+
+# Create and activate virtual environment
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
-# Install dependencies (if not already installed)
-pip install flask playwright
+# Install package dependencies
+pip install -e .
 
 # Install Chromium browser binaries for Playwright
 playwright install chromium
