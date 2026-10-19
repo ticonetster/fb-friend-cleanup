@@ -1,5 +1,10 @@
 # FacebookCleanup
 
+[![PyPI version](https://img.shields.io/pypi/v/fb-friend-cleanup.svg)](https://pypi.org/project/fb-friend-cleanup/)
+[![Python versions](https://img.shields.io/pypi/pyversions/fb-friend-cleanup.svg)](https://pypi.org/project/fb-friend-cleanup/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/ticonetster/fb-friend-cleanup)](https://github.com/ticonetster/fb-friend-cleanup/releases)
+
 An automated, local toolkit to audit, review, and selectively clean up your Facebook friends list while preserving full control, decision history, and account safety.
 
 Built with **Python**, **Flask**, **Playwright**, and **SQLite**.
@@ -51,23 +56,29 @@ flowchart LR
 
 ### Installation & Setup Options
 
-#### Option A: Install via pip from GitHub (Quickest)
+#### Option A: Install from PyPI (Recommended)
 ```bash
-pip install git+https://github.com/ticonetster/fb-friend-cleanup.git
+pip install fb-friend-cleanup
 playwright install chromium
 ```
 Once installed, you can launch the tools from any directory:
 - `fb-cleanup-app` - Starts the local web review interface at `http://127.0.0.1:8765`
 - `fb-cleanup-runner` - Starts the automated 3-in-1 cleanup batch execution
 
-#### Option B: Download Release Package (.whl)
+#### Option B: Install via pip from GitHub
+```bash
+pip install git+https://github.com/ticonetster/fb-friend-cleanup.git
+playwright install chromium
+```
+
+#### Option C: Download Release Package (.whl)
 Download `fb_friend_cleanup-1.0.0-py3-none-any.whl` from the [Latest GitHub Release](https://github.com/ticonetster/fb-friend-cleanup/releases/latest) and install:
 ```bash
 pip install fb_friend_cleanup-1.0.0-py3-none-any.whl
 playwright install chromium
 ```
 
-#### Option C: Clone and Run from Source (Recommended for Local Customization)
+#### Option D: Clone and Run from Source (Recommended for Local Customization)
 ```bash
 # Clone the repository (or open your existing project folder)
 git clone https://github.com/ticonetster/fb-friend-cleanup.git
