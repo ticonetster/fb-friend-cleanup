@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fb-friend-cleanup"
-version = "1.0.0"
+version = "1.1.0"
 description = "Automated local toolkit to audit, review, and selectively prune your Facebook friends list with rate-limiting, mutual-friend discovery, chat deletion, and safety controls."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -39,6 +39,8 @@ dependencies = [
 [project.scripts]
 fb-cleanup-app = "app:main"
 fb-cleanup-runner = "cleanup_runner:main"
+fb-collect-following = "collect_following:main"
+fb-unfollow-runner = "unfollow_runner:main"
 
 [tool.setuptools]
-py-modules = ["app", "cleanup_runner", "collect_friends", "collect_photos", "test_facebook", "test_friends"]
+py-modules = ["app", "cleanup_runner", "collect_friends", "collect_photos", "collect_following", "unfollow_runner", "test_facebook", "test_friends"]

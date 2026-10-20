@@ -15,12 +15,16 @@ Built with **Python**, **Flask**, **Playwright**, and **SQLite**.
 
 - [Overview & Workflow Order](#overview--workflow-order)
 - [Project Prerequisites & Setup](#project-prerequisites--setup)
-- [Scripts Reference & Order of Use](#scripts-reference--order-of-use)
+- [Scripts Reference & Order of Use (Friends Cleanup)](#scripts-reference--order-of-use-friends-cleanup)
   - [Step 1: Session Authentication (`test_facebook.py`)](#step-1-session-authentication-test_facebookpy)
   - [Step 2: Collect Friends (`collect_friends.py`)](#step-2-collect-friends-collect_friendspy)
   - [Step 3: Collect Profile Photos (`collect_photos.py`)](#step-3-collect-profile-photos-collect_photospy)
   - [Step 4: Interactive Review Web App (`app.py`)](#step-4-interactive-review-web-app-apppy)
   - [Step 5: 3-in-1 Cleanup Execution (`cleanup_runner.py`)](#step-5-3-in-1-cleanup-execution-cleanup_runnerpy)
+- [Following Cleanup Workflow (Accounts You Only Follow)](#following-cleanup-workflow-accounts-you-only-follow)
+  - [Step 1: Collect Followed Accounts (`collect_following.py`)](#step-1-collect-followed-accounts-collect_followingpy)
+  - [Step 2: Review in Web App (`app.py`)](#step-2-review-in-web-app-apppy)
+  - [Step 3: Execute Unfollow Batch (`unfollow_runner.py`)](#step-3-execute-unfollow-batch-unfollow_runnerpy)
 - [Database Architecture & Data Safety](#database-architecture--data-safety)
 - [Facebook Anti-Abuse, Rate Limits & Best Practices](#facebook-anti-abuse-rate-limits--best-practices)
 - [Troubleshooting & FAQ](#troubleshooting--faq)
@@ -62,8 +66,10 @@ pip install fb-friend-cleanup
 playwright install chromium
 ```
 Once installed, you can launch the tools from any directory:
-- `fb-cleanup-app` - Starts the local web review interface at `http://127.0.0.1:8765`
-- `fb-cleanup-runner` - Starts the automated 3-in-1 cleanup batch execution
+- `fb-cleanup-app` - Starts the local web review interface at `http://127.0.0.1:8765` (supports both Friends & Following)
+- `fb-cleanup-runner` - Starts the automated 3-in-1 friend cleanup batch execution
+- `fb-collect-following` - Ingests profiles and pages you follow from `facebook.com/me/following`
+- `fb-unfollow-runner` - Safely unfollows accounts marked to unfollow
 
 #### Option B: Install via pip from GitHub
 ```bash
@@ -205,6 +211,58 @@ playwright install chromium
 
 ---
 
+## Following Cleanup Workflow (Accounts You Only Follow)
+
+If you follow creators, public figures, pages, or accounts that you are **not** friends with, you can audit and prune them using the dedicated Following workflow:
+
+```mermaid
+flowchart LR
+    A["1. Collect Following\n(collect_following.py)"] --> B["2. Review & Decide\n(app.py ➔ Following Tab)"]
+    B --> C["3. Execute Unfollow\n(unfollow_runner.py)"]
+```
+
+### Step 1: Collect Followed Accounts (`collect_following.py`)
+- **Purpose**: Navigates to `https://www.facebook.com/me/following`, extracts visible profiles and pages with thumbnail avatars, normalizes profile URLs, and populates the `following` table.
+- **Usage**:
+  ```bash
+  # Interactive mode: opens browser, scroll down to load accounts, then press Enter in terminal
+  python collect_following.py
+
+  # Automatic scrolling mode (scrolls down with jitter):
+  python collect_following.py --auto-scroll --max-scrolls 30
+  ```
+
+### Step 2: Review in Web App (`app.py`)
+- Launch the web app:
+  ```bash
+  python app.py
+  # Or run: fb-cleanup-app
+  ```
+- Click the **"🔔 Following Review"** tab at the top of the interface.
+- Review each followed profile/page:
+  - **✓ KEEP FOLLOWING** (Press `K`): Remains followed.
+  - **✕ UNFOLLOW** (Press `U` or `R`): Marks profile to be unfollowed.
+  - **↶ Undo** (Press `Z`): Reverts your last decision.
+
+### Step 3: Execute Unfollow Batch (`unfollow_runner.py`)
+- **Purpose**: Automates the unfollow action on profiles marked with `decision='unfollow'`. Navigates to each profile header, clicks "Following", selects "Unfollow", and records progress in `unfollow_log`.
+- **Usage**:
+  ```bash
+  # Test with a single profile in dry-run mode (doesn't click Unfollow)
+  python unfollow_runner.py --single --dry-run
+
+  # Live test on a single profile
+  python unfollow_runner.py --single
+
+  # Standard batch (processes next 30 queued accounts with human pacing & jitter)
+  python unfollow_runner.py
+
+  # Or using the installed CLI command:
+  fb-unfollow-runner
+  ```
+
+---
+
 ## Database Architecture & Data Safety
 
 All application data is maintained in SQLite at `friends.sqlite3`:
@@ -247,6 +305,24 @@ erDiagram
         int attempts
         text last_error
         text removed_at
+        text created_at
+    }
+
+    following ||--o| unfollow_log : "tracked in"
+    following {
+        text profile_url PK
+        text name
+        text photo_url
+        text decision "pending | keep | unfollow"
+        text reviewed_at
+    }
+    unfollow_log {
+        text profile_url PK
+        text name
+        text status "pending | unfollowed | failed | skipped"
+        int attempts
+        text last_error
+        text unfollowed_at
         text created_at
     }
 ```
