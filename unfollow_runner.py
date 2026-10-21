@@ -50,6 +50,12 @@ def sync_pending_targets():
     """Ensure any profile marked 'unfollow' in following is queued in unfollow_log."""
     with connect() as db:
         db.execute('''
+            DELETE FROM unfollow_log
+            WHERE status = 'pending' AND profile_url IN (
+                SELECT profile_url FROM following WHERE decision = 'keep'
+            )
+        ''')
+        db.execute('''
             INSERT INTO unfollow_log (profile_url, name, status, created_at)
             SELECT f.profile_url, f.name, 'pending', ?
             FROM following f
