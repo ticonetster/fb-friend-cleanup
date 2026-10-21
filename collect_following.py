@@ -110,10 +110,12 @@ def extract_visible_followed(page):
 def main():
     parser = argparse.ArgumentParser(description="Collect profiles and pages you follow from Facebook.")
     parser.add_argument("--auto-scroll", action="store_true", help="Automatically scroll down to load items.")
-    parser.add_argument("--max-scrolls", type=int, default=30, help="Maximum number of scrolls in auto mode.")
+    parser.add_argument("--max-scrolls", type=int, default=100, help="Maximum number of scrolls in auto mode (default: 100).")
     args = parser.parse_args()
 
     init_db()
+
+    items = {}
 
     from playwright.sync_api import sync_playwright
 
@@ -132,36 +134,58 @@ def main():
         own_url_clean = page.url.split('/following')[0].rstrip('/')
         own_slug = own_url_clean.split('/')[-1].lower() if own_url_clean else ''
 
+        def ingest_current_dom():
+            raw_items = extract_visible_followed(page)
+            for it in raw_items:
+                clean_url = normalize_fb_url(it['url'])
+                if clean_url and clean_url.rstrip('/') != own_url_clean and (not own_slug or own_slug not in clean_url.lower()):
+                    if clean_url not in items or (not items[clean_url]['photo_url'] and it['photo_url']):
+                        items[clean_url] = {
+                            'name': it['name'],
+                            'photo_url': it['photo_url']
+                        }
+
+        # Initial scrape before scrolling
+        ingest_current_dom()
+
         if args.auto_scroll:
             print(f"Auto-scrolling enabled (up to {args.max_scrolls} scrolls)...")
             prev_height = 0
+            same_height_count = 0
+
             for i in range(args.max_scrolls):
                 page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
-                time.sleep(random.uniform(2.0, 3.5))
+                time.sleep(random.uniform(2.0, 3.2))
+
+                # Periodically collect to avoid losing elements if Facebook recycles DOM nodes
+                ingest_current_dom()
+
                 curr_height = page.evaluate("document.body.scrollHeight")
-                print(f"  Scroll {i+1}/{args.max_scrolls} complete (page height: {curr_height}px)")
-                if curr_height == prev_height and i > 5:
-                    print("  No new items loaded after repeated scrolls. Stopping auto-scroll.")
-                    break
+                print(f"  Scroll {i+1}/{args.max_scrolls}: {len(items)} followed accounts discovered so far (page height: {curr_height}px)")
+
+                if curr_height == prev_height:
+                    same_height_count += 1
+                    # Jiggle scroll up slightly then down to trigger lazy loaders
+                    page.evaluate("window.scrollBy(0, -450)")
+                    time.sleep(1.0)
+                    page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+                    time.sleep(2.0)
+                    curr_height = page.evaluate("document.body.scrollHeight")
+                    if curr_height == prev_height and same_height_count >= 3:
+                        print("  Reached the end of your Following list. Stopping auto-scroll.")
+                        break
+                else:
+                    same_height_count = 0
+
                 prev_height = curr_height
         else:
             print("\nBrowser is open to your 'Following' page.")
             print("Scroll down in the browser to load all accounts and pages you follow.")
             input("When finished scrolling, press Enter here to collect visible profiles... ")
 
-        raw_items = extract_visible_followed(page)
+        # Final comprehensive pass
+        ingest_current_dom()
         browser.close()
-
-    # Deduplicate and normalize
-    items = {}
-    for it in raw_items:
-        clean_url = normalize_fb_url(it['url'])
-        if clean_url and clean_url.rstrip('/') != own_url_clean and (not own_slug or own_slug not in clean_url.lower()):
-            if clean_url not in items or (not items[clean_url]['photo_url'] and it['photo_url']):
-                items[clean_url] = {
-                    'name': it['name'],
-                    'photo_url': it['photo_url']
-                }
 
     with sqlite3.connect(DB) as db:
         db.executemany('''
